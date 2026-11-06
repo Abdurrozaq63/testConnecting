@@ -1,0 +1,62 @@
+generator client {
+    provider = "prisma-client"
+    output   = "../generated/prisma"
+}
+
+// prisma/schema.prisma
+datasource db {
+    provider = "postgresql"
+    // uncomment next line if you use Prisma <5.10
+    // directUrl = env("DATABASE_URL_UNPOOLED")
+}
+
+model User {
+    id        Int      @id @default(autoincrement())
+    name      String
+    email     String   @unique
+    password  String
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+model Teacher {
+    id            Int            @id @default(autoincrement())
+    name          String
+    email         String         @unique
+    phone         String?
+    classTeachers ClassTeacher[]
+    createdAt     DateTime       @default(now())
+    updatedAt     DateTime       @updatedAt
+}
+
+model SchoolClass {
+    id            Int            @id @default(autoincrement())
+    name          String
+    classTeachers ClassTeacher[]
+    students      Student[]
+    createdAt     DateTime       @default(now())
+    updatedAt     DateTime       @updatedAt
+
+    @@map("classes")
+}
+
+model ClassTeacher {
+    teacherId Int
+    classId   Int
+
+    teacher     Teacher     @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+    schoolClass SchoolClass @relation(fields: [classId], references: [id], onDelete: Cascade)
+
+    @@id([teacherId, classId])
+    @@map("class_teachers")
+}
+
+model Student {
+    id          Int         @id @default(autoincrement())
+    name        String
+    email       String      @unique
+    classId     Int
+    schoolClass SchoolClass @relation(fields: [classId], references: [id])
+    createdAt   DateTime    @default(now())
+    updatedAt   DateTime    @updatedAt
+}
